@@ -1,1 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Orders | Print & Craft Management System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+
+                <i class="bi bi-printer-fill"></i>
+
+            </div>
+
+            <h2>Print & Craft</h2>
+
+            <span>Management System</span>
+
+        </div>
+
+        <ul class="menu">
+
+            <li onclick="location.href='index.html'">
+
+                <i class="bi bi-grid-fill"></i>
+
+                <span>Dashboard</span>
+
+            </li>
+
+            <li class="active">
+
+                <i class="bi bi-cart-fill"></i>
+
+                <span>Orders</span>
+
+            </li>
+
+            <li onclick="location.href='inventory.html'">
+
+                <i class="bi bi-box-seam-fill"></i>
+
+                <span>Inventory</span>
+
+            </li>
+
+        </ul>
+
+    </aside>
+
+    <!-- Main -->
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>Orders</h1>
+
+                <p>Manage all customer orders</p>
+
+            </div>
+
+            <button class="btn-order">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Add Order
+
+            </button>
+
+        </header>
+
+        <!-- Toolbar -->
+
+        <section class="table-section">
+
+            <div class="table-header">
+
+                <div>
+
+                    <h3>Orders List</h3>
+
+                    <p>All customer orders</p>
+
+                </div>
+
+                <div class="top-right">
+
+                    <div class="search-box">
+
+                        <i class="bi bi-search"></i>
+
+                        <input
+                            type="text"
+                            placeholder="Search Order">
+
+                    </div>
+
+                    <select class="form-select">
+
+                        <option>All Status</option>
+
+                        <option>Pending</option>
+
+                        <option>Completed</option>
+
+                        <option>Cancelled</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Order ID</th>
+
+                            <th>Customer</th>
+
+                            <th>Platform</th>
+
+                            <th>Products</th>
+
+                            <th>Qty</th>
+
+                            <th>Total</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>ORD-0001</td>
+
+                            <td>Louie Jay</td>
+
+                            <td>Facebook</td>
+
+                            <td>Wallet Polaroid</td>
+
+                            <td>20</td>
+
+                            <td>₱99</td>
+
+                            <td>
+
+                                <span class="status pending">
+
+                                    Pending
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <button class="action-btn edit">
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </button>
+
+                                <button class="action-btn delete">
+
+                                    <i class="bi bi-trash"></i>
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>ORD-0002</td>
+
+                            <td>Andrea</td>
+
+                            <td>Shopee</td>
+
+                            <td>Bracelet</td>
+
+                            <td>2</td>
+
+                            <td>₱60</td>
+
+                            <td>
+
+                                <span class="status complete">
+
+                                    Completed
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <button class="action-btn edit">
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </button>
+
+                                <button class="action-btn delete">
+
+                                    <i class="bi bi-trash"></i>
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+                                                <tr>
+
+                            <td>ORD-0003</td>
+
+                            <td>John Doe</td>
+
+                            <td>Walk-in</td>
+
+                            <td>Photo Frame</td>
+
+                            <td>1</td>
+
+                            <td>₱350</td>
+
+                            <td>
+
+                                <span class="status pending">
+
+                                    Pending
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <button class="action-btn edit">
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </button>
+
+                                <button class="action-btn delete">
+
+                                    <i class="bi bi-trash"></i>
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<!-- ===========================
+ADD ORDER MODAL
+============================ -->
+
+<div class="modal fade" id="addOrderModal" tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    Add New Order
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Customer Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Platform
+
+                        </label>
+
+                        <select class="form-select">
+
+                            <option>Facebook</option>
+                            <option>Shopee</option>
+                            <option>Walk-in</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            Product
+
+                        </label>
+
+                        <select class="form-select">
+
+                            <option>Wallet Polaroid</option>
+                            <option>ATM Polaroid</option>
+                            <option>Photostrip</option>
+                            <option>Bracelet</option>
+                            <option>Frame</option>
+                            <option>Keychain</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+
+                            Quantity
+
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            value="1">
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <label class="form-label">
+
+                            Total
+
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    class="btn btn-primary">
+
+                    Save Order
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="js/app.js"></script>
+
+</body>
+
+</html>
