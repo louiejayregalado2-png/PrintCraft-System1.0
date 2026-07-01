@@ -1,162 +1,207 @@
-// =======================================
-// PRINT & CRAFT DASHBOARD
-// =======================================
+// =========================================
+// PRINT & CRAFT MANAGEMENT SYSTEM
+// DASHBOARD
+// =========================================
 
-const productKey = "products";
-const orderKey = "orders";
+const PRODUCT_KEY = "products";
+const ORDER_KEY = "orders";
 
-let products = JSON.parse(localStorage.getItem(productKey)) || [];
-let orders = JSON.parse(localStorage.getItem(orderKey)) || [];
+let products = JSON.parse(localStorage.getItem(PRODUCT_KEY)) || [];
+let orders = JSON.parse(localStorage.getItem(ORDER_KEY)) || [];
 
-// Dashboard Elements
-const totalProducts = document.getElementById("totalProducts");
-const lowStock = document.getElementById("lowStock");
+// Dashboard Cards
 const todaySales = document.getElementById("todaySales");
 const pendingOrders = document.getElementById("pendingOrders");
+const totalProducts = document.getElementById("totalProducts");
+const lowStock = document.getElementById("lowStock");
+
+// Summary Cards
+const summaryProducts = document.getElementById("summaryProducts");
+const summaryOrders = document.getElementById("summaryOrders");
+const summarySales = document.getElementById("summarySales");
+const summaryLowStock = document.getElementById("summaryLowStock");
+
+// Recent Orders
 const recentOrders = document.getElementById("recentOrders");
 
-// ===============================
+// =========================================
 // LOAD DASHBOARD
-// ===============================
-
-loadDashboard();
+// =========================================
 
 function loadDashboard(){
 
-    loadProductCount();
+    products =
+    JSON.parse(localStorage.getItem(PRODUCT_KEY)) || [];
 
-    loadLowStock();
+    orders =
+    JSON.parse(localStorage.getItem(ORDER_KEY)) || [];
 
-    loadPendingOrders();
+    updateCards();
 
-    loadTodaySales();
+    updateSummary();
 
     loadRecentOrders();
 
 }
 
-// ===============================
-// TOTAL PRODUCTS
-// ===============================
+document.addEventListener("DOMContentLoaded",loadDashboard);
 
-function loadProductCount(){
+// =========================================
+// UPDATE CARDS
+// =========================================
 
-    if(!totalProducts) return;
+function updateCards(){
 
-    totalProducts.textContent = products.length;
+    if(totalProducts){
 
-}
+        totalProducts.textContent = products.length;
 
-// ===============================
-// LOW STOCK
-// ===============================
+    }
 
-function loadLowStock(){
+    if(summaryProducts){
 
-    if(!lowStock) return;
+        summaryProducts.textContent = products.length;
 
-    let total = 0;
+    }
 
-    products.forEach(product=>{
+    let low = products.filter(product=>
 
-        if(product.stock <= product.lowStock){
+        product.stock <= product.lowStock
 
-            total++;
+    ).length;
 
-        }
+    if(lowStock){
 
-    });
+        lowStock.textContent = low;
 
-    lowStock.textContent = total;
+    }
 
-}
+    if(summaryLowStock){
 
-// ===============================
-// PENDING ORDERS
-// ===============================
+        summaryLowStock.textContent = low;
 
-function loadPendingOrders(){
+    }
 
-    if(!pendingOrders) return;
+    let pending = orders.filter(order=>
 
-    let total = 0;
+        order.status=="Pending"
 
-    orders.forEach(order=>{
+    ).length;
 
-        if(order.status=="Pending"){
+    if(pendingOrders){
 
-            total++;
+        pendingOrders.textContent = pending;
 
-        }
+    }
 
-    });
+    let today = new Date().toISOString().split("T")[0];
 
-    pendingOrders.textContent = total;
-
-}
-// ===============================
-// TODAY'S SALES
-// ===============================
-
-function loadTodaySales(){
-
-    if(!todaySales) return;
-
-    let total = 0;
-
-    const today = new Date().toISOString().split("T")[0];
+    let todayTotal = 0;
 
     orders.forEach(order=>{
 
-        if(order.date === today){
+        if(order.date==today){
 
-            total += Number(order.total);
+            todayTotal += Number(order.total);
 
         }
 
     });
 
-    todaySales.textContent =
-    "₱" + total.toLocaleString(undefined,{
-        minimumFractionDigits:2
+    if(todaySales){
+
+        todaySales.textContent =
+        "₱" + todayTotal.toFixed(2);
+
+    }
+
+}
+// =========================================
+// UPDATE SUMMARY
+// =========================================
+
+function updateSummary(){
+
+    if(summaryOrders){
+
+        summaryOrders.textContent = orders.length;
+
+    }
+
+    let totalSales = 0;
+
+    orders.forEach(order=>{
+
+        if(order.status !== "Cancelled"){
+
+            totalSales += Number(order.total);
+
+        }
+
     });
+
+    if(summarySales){
+
+        summarySales.textContent =
+        "₱" + totalSales.toLocaleString(undefined,{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+    }
 
 }
 
-// ===============================
+// =========================================
 // RECENT ORDERS
-// ===============================
+// =========================================
 
 function loadRecentOrders(){
 
     if(!recentOrders) return;
 
-    if(orders.length==0){
+    recentOrders.innerHTML = "";
 
-        recentOrders.innerHTML=`
+    if(orders.length === 0){
 
-        <tr>
+        recentOrders.innerHTML = `
 
-            <td colspan="6" class="empty">
+<tr>
 
-                No Orders Yet
+<td colspan="6" class="empty">
 
-            </td>
+No Orders Yet
 
-        </tr>
+</td>
 
-        `;
+</tr>
+
+`;
 
         return;
 
     }
 
-    recentOrders.innerHTML="";
+    const latestOrders =
+    [...orders]
+    .sort((a,b)=>new Date(b.date)-new Date(a.date))
+    .slice(0,5);
 
-    const latest =
-    [...orders].reverse().slice(0,5);
+    latestOrders.forEach(order=>{
 
-    latest.forEach(order=>{
+        let badge = "completed";
+
+        if(order.status==="Pending"){
+
+            badge="pending";
+
+        }
+
+        if(order.status==="Cancelled"){
+
+            badge="cancelled";
+
+        }
 
         recentOrders.innerHTML += `
 
@@ -174,7 +219,7 @@ function loadRecentOrders(){
 
 <td>
 
-<span class="status ${order.status=="Pending" ? "low-stock" : "in-stock"}">
+<span class="${badge}">
 
 ${order.status}
 
@@ -190,30 +235,19 @@ ${order.status}
 
 }
 
-// ===============================
+// =========================================
 // AUTO REFRESH
-// ===============================
+// =========================================
 
 window.addEventListener("storage",()=>{
 
-    products =
-    JSON.parse(localStorage.getItem(productKey)) || [];
-
-    orders =
-    JSON.parse(localStorage.getItem(orderKey)) || [];
-
     loadDashboard();
 
 });
 
-// ===============================
-// REFRESH WHEN PAGE OPENS
-// ===============================
+// Refresh every second so Dashboard
+// updates after adding Orders/Products
 
-document.addEventListener("DOMContentLoaded",()=>{
+setInterval(loadDashboard,1000);
 
-    loadDashboard();
-
-});
-
-console.log("Dashboard Loaded Successfully");
+console.log("Dashboard Loaded");

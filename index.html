@@ -8,7 +8,7 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>Print & Craft Management System</title>
+<title>Dashboard | Print & Craft</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
 rel="stylesheet">
@@ -25,7 +25,9 @@ href="css/style.css">
 
 <div class="layout">
 
-<!-- Sidebar -->
+<!-- =======================
+SIDEBAR
+======================= -->
 
 <aside class="sidebar">
 
@@ -45,8 +47,7 @@ href="css/style.css">
 
 <nav>
 
-<a href="index.html"
-class="active">
+<a href="index.html" class="active">
 
 <i class="bi bi-grid-fill"></i>
 
@@ -74,7 +75,9 @@ class="active">
 
 </aside>
 
-<!-- Content -->
+<!-- =======================
+MAIN CONTENT
+======================= -->
 
 <div class="content">
 
@@ -86,7 +89,7 @@ class="active">
 
 <p>
 
-Welcome back 👋
+Welcome back, Admin 👋
 
 </p>
 
@@ -108,7 +111,7 @@ placeholder="Search...">
 href="orders.html"
 class="btn-purple">
 
-<i class="bi bi-plus-circle"></i>
+<i class="bi bi-plus-circle-fill"></i>
 
 New Order
 
@@ -118,7 +121,9 @@ New Order
 
 </header>
 
-<!-- Statistics -->
+<!-- =======================
+CARDS
+======================= -->
 
 <div class="cards">
 
@@ -211,7 +216,9 @@ New Order
 </div>
 
 </div>
-<!-- Recent Orders -->
+<!-- =======================
+RECENT ORDERS
+======================= -->
 
 <div class="table-card">
 
@@ -221,11 +228,11 @@ New Order
 
             <h3>Recent Orders</h3>
 
-            <p>Latest customer transactions</p>
+            <p>Latest customer orders</p>
 
         </div>
 
-        <a href="orders.html" class="btn-view">
+        <a href="orders.html" class="btn-purple">
 
             View All
 
@@ -277,7 +284,9 @@ New Order
 
 </div>
 
-<!-- Quick Actions -->
+<!-- =======================
+QUICK MENU
+======================= -->
 
 <div class="quick-actions">
 
@@ -287,7 +296,11 @@ New Order
 
         <h4>Inventory</h4>
 
-        <p>Add, edit and manage your products.</p>
+        <p>
+
+            Manage all your products.
+
+        </p>
 
     </a>
 
@@ -297,20 +310,262 @@ New Order
 
         <h4>Orders</h4>
 
-        <p>Create and manage customer orders.</p>
+        <p>
+
+            Create and manage customer orders.
+
+        </p>
 
     </a>
 
 </div>
+<!-- =======================
+SYSTEM SUMMARY
+======================= -->
+
+<div class="table-card mt-4">
+
+    <div class="table-header">
+
+        <div>
+
+            <h3>System Summary</h3>
+
+            <p>Quick overview of your Print & Craft business</p>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon blue mx-auto mb-3">
+
+                    <i class="bi bi-box-seam"></i>
+
+                </div>
+
+                <h3 id="summaryProducts">
+
+                    0
+
+                </h3>
+
+                <p>Total Products</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon orange mx-auto mb-3">
+
+                    <i class="bi bi-cart-fill"></i>
+
+                </div>
+
+                <h3 id="summaryOrders">
+
+                    0
+
+                </h3>
+
+                <p>Total Orders</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon green mx-auto mb-3">
+
+                    <i class="bi bi-cash-stack"></i>
+
+                </div>
+
+                <h3 id="summarySales">
+
+                    ₱0.00
+
+                </h3>
+
+                <p>Total Sales</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon red mx-auto mb-3">
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                </div>
+
+                <h3 id="summaryLowStock">
+
+                    0
+
+                </h3>
+
+                <p>Low Stock</p>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
+<!-- =======================
+FOOTER
+======================= -->
+
+<footer class="text-center mt-5 mb-3">
+
+    <small>
+
+        © 2026 Print & Craft Management System
+
+    </small>
+
+</footer>
+<!-- =======================
+SYSTEM SUMMARY
+======================= -->
+
+<div class="table-card mt-4">
+
+    <div class="table-header">
+
+        <div>
+
+            <h3>System Summary</h3>
+
+            <p>Quick overview of your Print & Craft business</p>
+
+        </div>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon blue mx-auto mb-3">
+
+                    <i class="bi bi-box-seam"></i>
+
+                </div>
+
+                <h3 id="summaryProducts">
+
+                    0
+
+                </h3>
+
+                <p>Total Products</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon orange mx-auto mb-3">
+
+                    <i class="bi bi-cart-fill"></i>
+
+                </div>
+
+                <h3 id="summaryOrders">
+
+                    0
+
+                </h3>
+
+                <p>Total Orders</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon green mx-auto mb-3">
+
+                    <i class="bi bi-cash-stack"></i>
+
+                </div>
+
+                <h3 id="summarySales">
+
+                    ₱0.00
+
+                </h3>
+
+                <p>Total Sales</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card text-center">
+
+                <div class="icon red mx-auto mb-3">
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                </div>
+
+                <h3 id="summaryLowStock">
+
+                    0
+
+                </h3>
+
+                <p>Low Stock</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<!-- =======================
+FOOTER
+======================= -->
 
-<script src="js/app.js"></script>
+<footer class="text-center mt-5 mb-3">
 
-</body>
+    <small>
 
-</html>
+        © 2026 Print & Craft Management System
+
+    </small>
+
+</footer>
