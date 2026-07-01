@@ -1,54 +1,100 @@
-// ===============================
-// Print & Craft Inventory System
-// ===============================
+// =====================================
+// PRINT & CRAFT INVENTORY SYSTEM
+// =====================================
 
 let products = JSON.parse(localStorage.getItem("products")) || [];
 
-const tableBody = document.querySelector("tbody");
+let editIndex = -1;
 
-const addProductModal = document.getElementById("addProductModal");
+const table = document.getElementById("productTable");
 
-const saveBtn = addProductModal
-    ? addProductModal.querySelector(".btn-primary")
-    : null;
+const modal = new bootstrap.Modal(document.getElementById("productModal"));
 
-const inputs = addProductModal
-    ? addProductModal.querySelectorAll("input, select, textarea")
-    : [];
+const txtName = document.getElementById("productName");
+const txtCategory = document.getElementById("productCategory");
+const txtPrice = document.getElementById("productPrice");
+const txtStock = document.getElementById("productStock");
+const txtLowStock = document.getElementById("lowStock");
+const txtImage = document.getElementById("productImage");
+const txtDescription = document.getElementById("description");
 
+const btnSave = document.getElementById("saveProduct");
 
-// ===============================
-// Render Products
-// ===============================
+const search = document.getElementById("searchProduct");
+const filter = document.getElementById("categoryFilter");
+
+// =====================================
+// LOAD PRODUCTS
+// =====================================
+
+renderProducts();
 
 function renderProducts(){
 
-    if(!tableBody) return;
+    table.innerHTML="";
 
-    tableBody.innerHTML = "";
+    let keyword = search.value.toLowerCase();
+    let category = filter.value;
 
-    products.forEach((product,index)=>{
+    let filtered = products.filter(product=>{
+
+        let matchName =
+        product.name.toLowerCase().includes(keyword);
+
+        let matchCategory =
+        category=="" ||
+        product.category==category;
+
+        return matchName && matchCategory;
+
+    });
+
+    if(filtered.length==0){
+
+        table.innerHTML=`
+
+        <tr>
+
+            <td colspan="7"
+            style="text-align:center;padding:40px;">
+
+                No Products Found
+
+            </td>
+
+        </tr>
+
+        `;
+
+        return;
+
+    }
+
+    filtered.forEach((product,index)=>{
 
         let status =
-            product.stock <= product.lowStock
-            ? "Low Stock"
-            : "In Stock";
+        product.stock<=product.lowStock
+        ? "Low Stock"
+        : "In Stock";
 
         let badge =
-            product.stock <= product.lowStock
-            ? "pending"
-            : "complete";
+        product.stock<=product.lowStock
+        ? "low-stock"
+        : "in-stock";
 
-        tableBody.innerHTML += `
+        table.innerHTML+=`
 
 <tr>
 
 <td>
 
-<img src="${product.image}"
-width="60"
-height="60"
-style="object-fit:cover;border-radius:10px;">
+<img
+src="${product.image}"
+style="
+width:60px;
+height:60px;
+object-fit:cover;
+border-radius:12px;">
 
 </td>
 
@@ -72,21 +118,25 @@ ${status}
 
 <td>
 
+<div class="action">
+
 <button
-class="action-btn edit"
+class="edit"
 onclick="editProduct(${index})">
 
-<i class="bi bi-pencil"></i>
+<i class="bi bi-pencil-fill"></i>
 
 </button>
 
 <button
-class="action-btn delete"
+class="delete"
 onclick="deleteProduct(${index})">
 
-<i class="bi bi-trash"></i>
+<i class="bi bi-trash-fill"></i>
 
 </button>
+
+</div>
 
 </td>
 
@@ -97,203 +147,43 @@ onclick="deleteProduct(${index})">
     });
 
 }
+// =====================================
+// SAVE PRODUCT
+// =====================================
 
-renderProducts();
-// ===============================
-// Save Product
-// ===============================
+btnSave.addEventListener("click", function () {
 
-if (saveBtn) {
+    if (txtName.value.trim() == "") {
 
-    saveBtn.addEventListener("click", () => {
+        alert("Product Name is required.");
+        return;
 
-        const name = inputs[0].value.trim();
-        const category = inputs[1].value;
-        const price = Number(inputs[2].value);
-        const stock = Number(inputs[3].value);
-        const lowStock = Number(inputs[4].value);
-        const imageInput = inputs[5];
+    }
 
-        if (
-            name === "" ||
-            price <= 0 ||
-            stock < 0
-        ) {
+    const saveProduct = (image) => {
 
-            alert("Please complete all fields.");
-            return;
+        const product = {
 
-        }
+            name: txtName.value.trim(),
+            category: txtCategory.value,
+            price: Number(txtPrice.value),
+            stock: Number(txtStock.value),
+            lowStock: Number(txtLowStock.value),
+            description: txtDescription.value,
+            image: image
 
-        if (imageInput.files.length > 0) {
+        };
 
-            const reader = new FileReader();
+        if (editIndex == -1) {
 
-            reader.onload = function (e) {
-
-                products.push({
-
-                    name,
-                    category,
-                    price,
-                    stock,
-                    lowStock,
-                    image: e.target.result
-
-                });
-
-                localStorage.setItem(
-                    "products",
-                    JSON.stringify(products)
-                );
-
-                renderProducts();
-
-                bootstrap.Modal.getInstance(addProductModal).hide();
-
-                inputs.forEach(input => {
-
-                    if (input.type == "file") {
-
-                        input.value = "";
-
-                    } else {
-
-                        input.value = "";
-
-                    }
-
-                });
-
-            };
-
-            reader.readAsDataURL(imageInput.files[0]);
+            products.push(product);
 
         } else {
 
-            products.push({
-
-                name,
-                category,
-                price,
-                stock,
-                lowStock,
-                image: "https://placehold.co/60x60"
-
-            });
-
-            localStorage.setItem(
-                "products",
-                JSON.stringify(products)
-            );
-
-            renderProducts();
-
-            bootstrap.Modal.getInstance(addProductModal).hide();
-
-            inputs.forEach(input => {
-
-                if (input.type == "file") {
-
-                    input.value = "";
-
-                } else {
-
-                    input.value = "";
-
-                }
-
-            });
+            products[editIndex] = product;
+            editIndex = -1;
 
         }
-
-    });
-
-}
-// ===============================
-// Edit Product
-// ===============================
-
-window.editProduct = function(index){
-
-    const product = products[index];
-
-    inputs[0].value = product.name;
-    inputs[1].value = product.category;
-    inputs[2].value = product.price;
-    inputs[3].value = product.stock;
-    inputs[4].value = product.lowStock;
-
-    const modal = new bootstrap.Modal(addProductModal);
-    modal.show();
-
-    saveBtn.textContent = "Update Product";
-
-    const newBtn = saveBtn.cloneNode(true);
-
-    saveBtn.parentNode.replaceChild(newBtn, saveBtn);
-
-    newBtn.addEventListener("click", function(){
-
-        product.name = inputs[0].value.trim();
-        product.category = inputs[1].value;
-        product.price = Number(inputs[2].value);
-        product.stock = Number(inputs[3].value);
-        product.lowStock = Number(inputs[4].value);
-
-        const imageInput = inputs[5];
-
-        if(imageInput.files.length > 0){
-
-            const reader = new FileReader();
-
-            reader.onload = function(e){
-
-                product.image = e.target.result;
-
-                localStorage.setItem(
-                    "products",
-                    JSON.stringify(products)
-                );
-
-                renderProducts();
-
-                modal.hide();
-
-                location.reload();
-
-            };
-
-            reader.readAsDataURL(imageInput.files[0]);
-
-        }else{
-
-            localStorage.setItem(
-                "products",
-                JSON.stringify(products)
-            );
-
-            renderProducts();
-
-            modal.hide();
-
-            location.reload();
-
-        }
-
-    });
-
-};
-
-// ===============================
-// Delete Product
-// ===============================
-
-window.deleteProduct = function(index){
-
-    if(confirm("Delete this product?")){
-
-        products.splice(index,1);
 
         localStorage.setItem(
             "products",
@@ -302,33 +192,152 @@ window.deleteProduct = function(index){
 
         renderProducts();
 
+        clearForm();
+
+        modal.hide();
+
+    };
+
+    if (txtImage.files.length > 0) {
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            saveProduct(e.target.result);
+
+        };
+
+        reader.readAsDataURL(txtImage.files[0]);
+
+    } else {
+
+        let image = "https://placehold.co/60x60";
+
+        if (editIndex != -1) {
+
+            image = products[editIndex].image;
+
+        }
+
+        saveProduct(image);
+
     }
+
+});
+
+// =====================================
+// CLEAR FORM
+// =====================================
+
+function clearForm() {
+
+    txtName.value = "";
+    txtCategory.selectedIndex = 0;
+    txtPrice.value = "";
+    txtStock.value = "";
+    txtLowStock.value = 10;
+    txtDescription.value = "";
+    txtImage.value = "";
+
+}
+
+// =====================================
+// SAVE TO LOCAL STORAGE
+// =====================================
+
+function saveStorage() {
+
+    localStorage.setItem(
+        "products",
+        JSON.stringify(products)
+    );
+
+}
+// =====================================
+// EDIT PRODUCT
+// =====================================
+
+window.editProduct = function(index){
+
+    const product = products[index];
+
+    editIndex = index;
+
+    txtName.value = product.name;
+    txtCategory.value = product.category;
+    txtPrice.value = product.price;
+    txtStock.value = product.stock;
+    txtLowStock.value = product.lowStock;
+    txtDescription.value = product.description;
+
+    document.querySelector(".modal-title").textContent = "Edit Product";
+    btnSave.textContent = "Update Product";
+
+    modal.show();
 
 };
 
-// ===============================
-// Search
-// ===============================
+// =====================================
+// DELETE PRODUCT
+// =====================================
 
-const searchInput = document.querySelector(".search-box input");
+window.deleteProduct = function(index){
 
-if(searchInput){
+    if(!confirm("Are you sure you want to delete this product?")){
 
-    searchInput.addEventListener("keyup",function(){
+        return;
 
-        const value = this.value.toLowerCase();
+    }
 
-        const rows = tableBody.querySelectorAll("tr");
+    products.splice(index,1);
 
-        rows.forEach(row=>{
+    saveStorage();
 
-            row.style.display =
-                row.innerText.toLowerCase().includes(value)
-                ? ""
-                : "none";
+    renderProducts();
 
-        });
+};
 
-    });
+// =====================================
+// SEARCH
+// =====================================
 
-}
+search.addEventListener("keyup",function(){
+
+    renderProducts();
+
+});
+
+// =====================================
+// CATEGORY FILTER
+// =====================================
+
+filter.addEventListener("change",function(){
+
+    renderProducts();
+
+});
+
+// =====================================
+// RESET MODAL WHEN CLOSED
+// =====================================
+
+document
+.getElementById("productModal")
+.addEventListener("hidden.bs.modal",function(){
+
+    clearForm();
+
+    editIndex = -1;
+
+    document.querySelector(".modal-title").textContent = "Add Product";
+
+    btnSave.textContent = "Save Product";
+
+});
+
+// =====================================
+// INITIALIZE
+// =====================================
+
+renderProducts();
