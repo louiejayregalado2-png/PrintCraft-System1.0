@@ -1,107 +1,219 @@
-// =====================================
-// Print & Craft Management System
-// app.js
-// =====================================
+// =======================================
+// PRINT & CRAFT DASHBOARD
+// =======================================
 
-document.addEventListener("DOMContentLoaded", () => {
+const productKey = "products";
+const orderKey = "orders";
 
-    console.log("Print & Craft Management System Loaded");
+let products = JSON.parse(localStorage.getItem(productKey)) || [];
+let orders = JSON.parse(localStorage.getItem(orderKey)) || [];
 
-    // Sidebar Active Menu
-    const menuItems = document.querySelectorAll(".menu li");
+// Dashboard Elements
+const totalProducts = document.getElementById("totalProducts");
+const lowStock = document.getElementById("lowStock");
+const todaySales = document.getElementById("todaySales");
+const pendingOrders = document.getElementById("pendingOrders");
+const recentOrders = document.getElementById("recentOrders");
 
-    menuItems.forEach(item => {
+// ===============================
+// LOAD DASHBOARD
+// ===============================
 
-        item.addEventListener("click", () => {
+loadDashboard();
 
-            menuItems.forEach(menu => menu.classList.remove("active"));
+function loadDashboard(){
 
-            item.classList.add("active");
+    loadProductCount();
 
-        });
+    loadLowStock();
 
-    });
+    loadPendingOrders();
 
-    // New Order Button
-    const newOrderBtn = document.querySelector(".btn-order");
+    loadTodaySales();
 
-    if (newOrderBtn) {
+    loadRecentOrders();
 
-        newOrderBtn.addEventListener("click", () => {
+}
 
-            alert("New Order feature will be added in the next lessons.");
+// ===============================
+// TOTAL PRODUCTS
+// ===============================
 
-        });
+function loadProductCount(){
 
-    }
+    if(!totalProducts) return;
 
-    // View All Button
-    const viewBtn = document.querySelector(".view-btn");
+    totalProducts.textContent = products.length;
 
-    if (viewBtn) {
+}
 
-        viewBtn.addEventListener("click", () => {
+// ===============================
+// LOW STOCK
+// ===============================
 
-            alert("Orders page coming soon.");
+function loadLowStock(){
 
-        });
+    if(!lowStock) return;
 
-    }
+    let total = 0;
 
-    // Edit Buttons
-    const editButtons = document.querySelectorAll(".edit");
+    products.forEach(product=>{
 
-    editButtons.forEach(button => {
+        if(product.stock <= product.lowStock){
 
-        button.addEventListener("click", () => {
+            total++;
 
-            alert("Edit Order feature coming soon.");
-
-        });
-
-    });
-
-    // Delete Buttons
-    const deleteButtons = document.querySelectorAll(".delete");
-
-    deleteButtons.forEach(button => {
-
-        button.addEventListener("click", () => {
-
-            const confirmDelete = confirm("Delete this order?");
-
-            if(confirmDelete){
-
-                alert("Delete feature coming soon.");
-
-            }
-
-        });
+        }
 
     });
 
-    // Search
-    const searchInput = document.querySelector(".search-box input");
+    lowStock.textContent = total;
 
-    if(searchInput){
+}
 
-        searchInput.addEventListener("keyup", function(){
+// ===============================
+// PENDING ORDERS
+// ===============================
 
-            const value = this.value.toLowerCase();
+function loadPendingOrders(){
 
-            const rows = document.querySelectorAll("tbody tr");
+    if(!pendingOrders) return;
 
-            rows.forEach(row=>{
+    let total = 0;
 
-                row.style.display =
-                row.innerText.toLowerCase().includes(value)
-                ? ""
-                : "none";
+    orders.forEach(order=>{
 
-            });
+        if(order.status=="Pending"){
 
-        });
+            total++;
+
+        }
+
+    });
+
+    pendingOrders.textContent = total;
+
+}
+// ===============================
+// TODAY'S SALES
+// ===============================
+
+function loadTodaySales(){
+
+    if(!todaySales) return;
+
+    let total = 0;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    orders.forEach(order=>{
+
+        if(order.date === today){
+
+            total += Number(order.total);
+
+        }
+
+    });
+
+    todaySales.textContent =
+    "₱" + total.toLocaleString(undefined,{
+        minimumFractionDigits:2
+    });
+
+}
+
+// ===============================
+// RECENT ORDERS
+// ===============================
+
+function loadRecentOrders(){
+
+    if(!recentOrders) return;
+
+    if(orders.length==0){
+
+        recentOrders.innerHTML=`
+
+        <tr>
+
+            <td colspan="6" class="empty">
+
+                No Orders Yet
+
+            </td>
+
+        </tr>
+
+        `;
+
+        return;
 
     }
+
+    recentOrders.innerHTML="";
+
+    const latest =
+    [...orders].reverse().slice(0,5);
+
+    latest.forEach(order=>{
+
+        recentOrders.innerHTML += `
+
+<tr>
+
+<td>${order.id}</td>
+
+<td>${order.customer}</td>
+
+<td>${order.platform}</td>
+
+<td>${order.product}</td>
+
+<td>₱${Number(order.total).toLocaleString()}</td>
+
+<td>
+
+<span class="status ${order.status=="Pending" ? "low-stock" : "in-stock"}">
+
+${order.status}
+
+</span>
+
+</td>
+
+</tr>
+
+`;
+
+    });
+
+}
+
+// ===============================
+// AUTO REFRESH
+// ===============================
+
+window.addEventListener("storage",()=>{
+
+    products =
+    JSON.parse(localStorage.getItem(productKey)) || [];
+
+    orders =
+    JSON.parse(localStorage.getItem(orderKey)) || [];
+
+    loadDashboard();
 
 });
+
+// ===============================
+// REFRESH WHEN PAGE OPENS
+// ===============================
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+    loadDashboard();
+
+});
+
+console.log("Dashboard Loaded Successfully");
