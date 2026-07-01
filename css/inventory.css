@@ -1,0 +1,653 @@
+/* =====================================
+   INVENTORY PAGE
+===================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:#f4f7fc;
+
+    font-family:
+    "Poppins",
+    sans-serif;
+
+}
+
+.layout{
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+/* ===========================
+SIDEBAR
+=========================== */
+
+.sidebar{
+
+    width:260px;
+
+    background:#4f46e5;
+
+    color:#fff;
+
+    position:fixed;
+
+    left:0;
+
+    top:0;
+
+    bottom:0;
+
+    padding:30px 20px;
+
+}
+
+.brand{
+
+    text-align:center;
+
+    margin-bottom:40px;
+
+}
+
+.brand-icon{
+
+    width:80px;
+
+    height:80px;
+
+    margin:auto;
+
+    border-radius:20px;
+
+    background:white;
+
+    color:#4f46e5;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:35px;
+
+    margin-bottom:15px;
+
+}
+
+.brand h2{
+
+    font-size:28px;
+
+    font-weight:700;
+
+}
+
+.brand p{
+
+    opacity:.8;
+
+}
+
+.sidebar nav{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+}
+
+.sidebar nav a{
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:15px;
+
+    border-radius:12px;
+
+    display:flex;
+
+    gap:12px;
+
+    align-items:center;
+
+    transition:.3s;
+
+}
+
+.sidebar nav a:hover{
+
+    background:rgba(255,255,255,.15);
+
+}
+
+.sidebar nav a.active{
+
+    background:white;
+
+    color:#4f46e5;
+
+}
+
+/* ===========================
+CONTENT
+=========================== */
+
+.content{
+
+    margin-left:260px;
+
+    width:100%;
+
+    padding:35px;
+
+}
+
+.header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+}
+
+.header h1{
+
+    font-size:34px;
+
+    font-weight:700;
+
+}
+
+.header span{
+
+    color:#777;
+
+}
+
+.btn-primary{
+
+    border:none;
+
+    background:#4f46e5;
+
+    padding:13px 25px;
+
+    color:white;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+}
+/* ===========================
+TOOLBAR
+=========================== */
+
+.toolbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
+    margin-bottom:30px;
+
+    flex-wrap:wrap;
+
+}
+
+.search{
+
+    background:white;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:14px 18px;
+
+    border-radius:12px;
+
+    width:350px;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+.search input{
+
+    border:none;
+
+    outline:none;
+
+    width:100%;
+
+    background:none;
+
+}
+
+.toolbar select{
+
+    border:none;
+
+    background:white;
+
+    padding:14px 18px;
+
+    border-radius:12px;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+/* ===========================
+TABLE
+=========================== */
+
+.table-container{
+
+    background:white;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+}
+
+table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+thead{
+
+    background:#f8fafc;
+
+}
+
+th{
+
+    padding:18px;
+
+    text-align:left;
+
+    font-weight:700;
+
+    color:#555;
+
+}
+
+td{
+
+    padding:18px;
+
+    border-top:1px solid #eee;
+
+}
+
+tbody tr:hover{
+
+    background:#fafafa;
+
+}
+
+td img{
+
+    width:60px;
+
+    height:60px;
+
+    object-fit:cover;
+
+    border-radius:12px;
+
+}
+
+.status{
+
+    padding:7px 14px;
+
+    border-radius:50px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
+
+.status.in-stock{
+
+    background:#d1fae5;
+
+    color:#047857;
+
+}
+
+.status.low-stock{
+
+    background:#fee2e2;
+
+    color:#dc2626;
+
+}
+
+.action{
+
+    display:flex;
+
+    gap:8px;
+
+}
+
+.action button{
+
+    border:none;
+
+    width:38px;
+
+    height:38px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+}
+
+.edit{
+
+    background:#dbeafe;
+
+    color:#2563eb;
+
+}
+
+.delete{
+
+    background:#fee2e2;
+
+    color:#dc2626;
+
+}
+/* ===========================
+MODAL
+=========================== */
+
+.modal-content{
+
+    border:none;
+
+    border-radius:20px;
+
+}
+
+.modal-header{
+
+    border-bottom:1px solid #eee;
+
+    padding:20px;
+
+}
+
+.modal-title{
+
+    font-weight:700;
+
+    font-size:24px;
+
+}
+
+.modal-body{
+
+    padding:25px;
+
+}
+
+.modal-body label{
+
+    font-weight:600;
+
+    margin-bottom:8px;
+
+    display:block;
+
+}
+
+.modal-body .form-control,
+.modal-body .form-select{
+
+    border-radius:12px;
+
+    padding:12px;
+
+    border:1px solid #ddd;
+
+    box-shadow:none;
+
+}
+
+.modal-body .form-control:focus,
+.modal-body .form-select:focus{
+
+    border-color:#4f46e5;
+
+    box-shadow:0 0 0 .2rem rgba(79,70,229,.2);
+
+}
+
+.modal-footer{
+
+    border-top:1px solid #eee;
+
+    padding:20px;
+
+}
+
+.modal-footer .btn{
+
+    border-radius:12px;
+
+    padding:10px 22px;
+
+    font-weight:600;
+
+}
+
+/* ===========================
+SCROLLBAR
+=========================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#4f46e5;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#f1f1f1;
+
+}
+
+/* ===========================
+MOBILE
+=========================== */
+
+@media(max-width:991px){
+
+    .sidebar{
+
+        width:80px;
+
+        padding:20px 10px;
+
+    }
+
+    .brand h2,
+    .brand p,
+    .sidebar nav a span{
+
+        display:none;
+
+    }
+
+    .brand-icon{
+
+        width:55px;
+
+        height:55px;
+
+        font-size:24px;
+
+    }
+
+    .sidebar nav a{
+
+        justify-content:center;
+
+        padding:15px;
+
+    }
+
+    .content{
+
+        margin-left:80px;
+
+        padding:20px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .content{
+
+        margin-left:0;
+
+        padding:15px;
+
+    }
+
+    .sidebar{
+
+        position:relative;
+
+        width:100%;
+
+        height:auto;
+
+        display:flex;
+
+        justify-content:space-between;
+
+        align-items:center;
+
+    }
+
+    .sidebar nav{
+
+        flex-direction:row;
+
+        gap:10px;
+
+        overflow-x:auto;
+
+    }
+
+    .toolbar{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+    .search{
+
+        width:100%;
+
+    }
+
+    .toolbar select{
+
+        width:100%;
+
+    }
+
+    .header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .table-container{
+
+        overflow-x:auto;
+
+    }
+
+    table{
+
+        min-width:900px;
+
+    }
+
+}
+
+@media(max-width:480px){
+
+    .header h1{
+
+        font-size:28px;
+
+    }
+
+    .btn-primary{
+
+        width:100%;
+
+    }
+
+}
