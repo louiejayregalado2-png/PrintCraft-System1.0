@@ -1,100 +1,68 @@
-// =====================================
-// PRINT & CRAFT INVENTORY SYSTEM
-// =====================================
+import {
+db,
+collection,
+addDoc,
+getDocs,
+updateDoc,
+deleteDoc,
+doc,
+onSnapshot
+} from "./firebase.js";
 
-let products = JSON.parse(localStorage.getItem("products")) || [];
+// ==============================
+// COLLECTION
+// ==============================
 
-let editIndex = -1;
+const productsRef = collection(db, "products");
 
-const table = document.getElementById("productTable");
+// ==============================
+// ELEMENTS
+// ==============================
 
-const modal = new bootstrap.Modal(document.getElementById("productModal"));
+const tableBody = document.querySelector("tbody");
 
-const txtName = document.getElementById("productName");
-const txtCategory = document.getElementById("productCategory");
-const txtPrice = document.getElementById("productPrice");
-const txtStock = document.getElementById("productStock");
-const txtLowStock = document.getElementById("lowStock");
-const txtImage = document.getElementById("productImage");
-const txtDescription = document.getElementById("description");
+const addModal =
+document.getElementById("addProductModal");
 
-const btnSave = document.getElementById("saveProduct");
+const saveBtn =
+document.getElementById("saveProduct");
 
-const search = document.getElementById("searchProduct");
-const filter = document.getElementById("categoryFilter");
+const inputs =
+addModal.querySelectorAll(
+"input, select, textarea"
+);
 
-// =====================================
+let editID = null;
+
+// ==============================
 // LOAD PRODUCTS
-// =====================================
+// ==============================
 
-renderProducts();
+loadProducts();
 
-function renderProducts(){
+function loadProducts(){
 
-    table.innerHTML="";
+onSnapshot(productsRef,(snapshot)=>{
 
-    let keyword = search.value.toLowerCase();
-    let category = filter.value;
+tableBody.innerHTML="";
 
-    let filtered = products.filter(product=>{
+snapshot.forEach((document)=>{
 
-        let matchName =
-        product.name.toLowerCase().includes(keyword);
+const product = document.data();
 
-        let matchCategory =
-        category=="" ||
-        product.category==category;
-
-        return matchName && matchCategory;
-
-    });
-
-    if(filtered.length==0){
-
-        table.innerHTML=`
-
-        <tr>
-
-            <td colspan="7"
-            style="text-align:center;padding:40px;">
-
-                No Products Found
-
-            </td>
-
-        </tr>
-
-        `;
-
-        return;
-
-    }
-
-    filtered.forEach((product,index)=>{
-
-        let status =
-        product.stock<=product.lowStock
-        ? "Low Stock"
-        : "In Stock";
-
-        let badge =
-        product.stock<=product.lowStock
-        ? "low-stock"
-        : "in-stock";
-
-        table.innerHTML+=`
+tableBody.innerHTML += `
 
 <tr>
 
 <td>
 
-<img
-src="${product.image}"
-style="
-width:60px;
-height:60px;
-object-fit:cover;
-border-radius:12px;">
+<img src="${product.image}"
+
+width="60"
+
+height="60"
+
+style="object-fit:cover;border-radius:10px;">
 
 </td>
 
@@ -108,9 +76,21 @@ border-radius:12px;">
 
 <td>
 
-<span class="status ${badge}">
+<span class="${
+product.stock<=product.lowStock
+?
+"pending"
+:
+"complete"
+}">
 
-${status}
+${
+product.stock<=product.lowStock
+?
+"Low Stock"
+:
+"In Stock"
+}
 
 </span>
 
@@ -118,25 +98,25 @@ ${status}
 
 <td>
 
-<div class="action">
-
 <button
-class="edit"
-onclick="editProduct(${index})">
 
-<i class="bi bi-pencil-fill"></i>
+class="action-btn edit"
+
+onclick="editProduct('${document.id}')">
+
+<i class="bi bi-pencil"></i>
 
 </button>
 
 <button
-class="delete"
-onclick="deleteProduct(${index})">
 
-<i class="bi bi-trash-fill"></i>
+class="action-btn delete"
+
+onclick="deleteProduct('${document.id}')">
+
+<i class="bi bi-trash"></i>
 
 </button>
-
-</div>
 
 </td>
 
@@ -144,200 +124,299 @@ onclick="deleteProduct(${index})">
 
 `;
 
-    });
+});
+
+});
 
 }
-// =====================================
+// ==============================
 // SAVE PRODUCT
-// =====================================
+// ==============================
 
-btnSave.addEventListener("click", function () {
+saveBtn.addEventListener("click", async () => {
 
-    if (txtName.value.trim() == "") {
+    const name = inputs[0].value.trim();
+    const category = inputs[1].value;
+    const price = Number(inputs[2].value);
+    const stock = Number(inputs[3].value);
+    const lowStock = Number(inputs[4].value);
+    const imageInput = inputs[5];
 
-        alert("Product Name is required.");
+    if(name=="" || price<=0){
+
+        alert("Please complete all fields.");
+
         return;
 
     }
 
-    const saveProduct = (image) => {
+    let image = "https://placehold.co/60x60";
 
-        const product = {
-
-            name: txtName.value.trim(),
-            category: txtCategory.value,
-            price: Number(txtPrice.value),
-            stock: Number(txtStock.value),
-            lowStock: Number(txtLowStock.value),
-            description: txtDescription.value,
-            image: image
-
-        };
-
-        if (editIndex == -1) {
-
-            products.push(product);
-
-        } else {
-
-            products[editIndex] = product;
-            editIndex = -1;
-
-        }
-
-        localStorage.setItem(
-            "products",
-            JSON.stringify(products)
-        );
-
-        renderProducts();
-
-        clearForm();
-
-        modal.hide();
-
-    };
-
-    if (txtImage.files.length > 0) {
+    if(imageInput.files.length>0){
 
         const reader = new FileReader();
 
-        reader.onload = function (e) {
+        reader.onload = async function(e){
 
-            saveProduct(e.target.result);
+            image = e.target.result;
+
+            if(editID==null){
+
+                await addDoc(productsRef,{
+
+                    name,
+                    category,
+                    price,
+                    stock,
+                    lowStock,
+                    image
+
+                });
+
+            }else{
+
+                await updateDoc(
+
+                    doc(db,"products",editID),
+
+                    {
+
+                        name,
+                        category,
+                        price,
+                        stock,
+                        lowStock,
+                        image
+
+                    }
+
+                );
+
+                editID=null;
+
+            }
+
+            clearForm();
+
+            bootstrap.Modal
+            .getInstance(addModal)
+            .hide();
 
         };
 
-        reader.readAsDataURL(txtImage.files[0]);
+        reader.readAsDataURL(imageInput.files[0]);
 
-    } else {
+    }else{
 
-        let image = "https://placehold.co/60x60";
+        if(editID==null){
 
-        if (editIndex != -1) {
+            await addDoc(productsRef,{
 
-            image = products[editIndex].image;
+                name,
+                category,
+                price,
+                stock,
+                lowStock,
+                image
+
+            });
+
+        }else{
+
+            await updateDoc(
+
+                doc(db,"products",editID),
+
+                {
+
+                    name,
+                    category,
+                    price,
+                    stock,
+                    lowStock
+
+                }
+
+            );
+
+            editID=null;
 
         }
 
-        saveProduct(image);
+        clearForm();
+
+        bootstrap.Modal
+        .getInstance(addModal)
+        .hide();
 
     }
 
 });
-
-// =====================================
-// CLEAR FORM
-// =====================================
-
-function clearForm() {
-
-    txtName.value = "";
-    txtCategory.selectedIndex = 0;
-    txtPrice.value = "";
-    txtStock.value = "";
-    txtLowStock.value = 10;
-    txtDescription.value = "";
-    txtImage.value = "";
-
-}
-
-// =====================================
-// SAVE TO LOCAL STORAGE
-// =====================================
-
-function saveStorage() {
-
-    localStorage.setItem(
-        "products",
-        JSON.stringify(products)
-    );
-
-}
-// =====================================
+// ==============================
 // EDIT PRODUCT
-// =====================================
+// ==============================
 
-window.editProduct = function(index){
+window.editProduct = async function(id){
 
-    const product = products[index];
+    editID = id;
 
-    editIndex = index;
+    const snapshot = await getDocs(productsRef);
 
-    txtName.value = product.name;
-    txtCategory.value = product.category;
-    txtPrice.value = product.price;
-    txtStock.value = product.stock;
-    txtLowStock.value = product.lowStock;
-    txtDescription.value = product.description;
+    snapshot.forEach((document)=>{
 
-    document.querySelector(".modal-title").textContent = "Edit Product";
-    btnSave.textContent = "Update Product";
+        if(document.id === id){
 
-    modal.show();
+            const product = document.data();
+
+            inputs[0].value = product.name;
+            inputs[1].value = product.category;
+            inputs[2].value = product.price;
+            inputs[3].value = product.stock;
+            inputs[4].value = product.lowStock;
+
+            saveBtn.textContent = "Update Product";
+
+            const modal = new bootstrap.Modal(addModal);
+
+            modal.show();
+
+        }
+
+    });
 
 };
 
-// =====================================
+// ==============================
 // DELETE PRODUCT
-// =====================================
+// ==============================
 
-window.deleteProduct = function(index){
+window.deleteProduct = async function(id){
 
-    if(!confirm("Are you sure you want to delete this product?")){
+    if(!confirm("Delete this product?")){
 
         return;
 
     }
 
-    products.splice(index,1);
+    await deleteDoc(
 
-    saveStorage();
+        doc(db,"products",id)
 
-    renderProducts();
+    );
 
 };
 
-// =====================================
-// SEARCH
-// =====================================
+// ==============================
+// SEARCH PRODUCT
+// ==============================
 
-search.addEventListener("keyup",function(){
+const searchInput = document.getElementById("searchProduct");
 
-    renderProducts();
+if(searchInput){
 
-});
+    searchInput.addEventListener("keyup",()=>{
 
-// =====================================
+        const keyword =
+        searchInput.value.toLowerCase();
+
+        const rows =
+        tableBody.querySelectorAll("tr");
+
+        rows.forEach(row=>{
+
+            row.style.display =
+            row.innerText
+            .toLowerCase()
+            .includes(keyword)
+            ?
+            ""
+            :
+            "none";
+
+        });
+
+    });
+
+}
+// ==============================
 // CATEGORY FILTER
-// =====================================
+// ==============================
 
-filter.addEventListener("change",function(){
+const categoryFilter =
+document.getElementById("categoryFilter");
 
-    renderProducts();
+if(categoryFilter){
+
+categoryFilter.addEventListener("change",()=>{
+
+const category =
+categoryFilter.value.toLowerCase();
+
+const rows =
+tableBody.querySelectorAll("tr");
+
+rows.forEach(row=>{
+
+if(category===""){
+
+row.style.display="";
+
+return;
+
+}
+
+const productCategory =
+row.cells[2].innerText.toLowerCase();
+
+row.style.display =
+productCategory===category
+?
+""
+:
+"none";
 
 });
 
-// =====================================
-// RESET MODAL WHEN CLOSED
-// =====================================
+});
 
-document
-.getElementById("productModal")
-.addEventListener("hidden.bs.modal",function(){
+}
 
-    clearForm();
+// ==============================
+// CLEAR FORM
+// ==============================
 
-    editIndex = -1;
+function clearForm(){
 
-    document.querySelector(".modal-title").textContent = "Add Product";
+inputs[0].value="";
+inputs[1].selectedIndex=0;
+inputs[2].value="";
+inputs[3].value="";
+inputs[4].value=10;
+inputs[5].value="";
+inputs[6].value="";
 
-    btnSave.textContent = "Save Product";
+editID=null;
+
+saveBtn.textContent="Save Product";
+
+}
+
+// ==============================
+// RESET MODAL
+// ==============================
+
+addModal.addEventListener(
+
+"hidden.bs.modal",
+
+()=>{
+
+clearForm();
 
 });
 
-// =====================================
-// INITIALIZE
-// =====================================
+// ==============================
+// READY
+// ==============================
 
-renderProducts();
+console.log("Firebase Inventory Ready");
