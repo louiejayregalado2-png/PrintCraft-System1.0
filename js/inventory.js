@@ -9,34 +9,57 @@ doc,
 onSnapshot
 } from "./firebase.js";
 
-// ==============================
-// COLLECTION
-// ==============================
+// ======================================
+// FIREBASE COLLECTION
+// ======================================
 
-const productsRef = collection(db, "products");
+const productsRef = collection(db,"products");
 
-// ==============================
-// ELEMENTS
-// ==============================
+// ======================================
+// HTML ELEMENTS
+// ======================================
 
-const tableBody = document.querySelector("tbody");
+const tableBody =
+document.getElementById("productTable");
 
-const addModal =
-document.getElementById("addProductModal");
+const modal =
+document.getElementById("productModal");
 
 const saveBtn =
 document.getElementById("saveProduct");
 
-const inputs =
-addModal.querySelectorAll(
-"input, select, textarea"
-);
+const txtName =
+document.getElementById("productName");
+
+const txtCategory =
+document.getElementById("productCategory");
+
+const txtPrice =
+document.getElementById("productPrice");
+
+const txtStock =
+document.getElementById("productStock");
+
+const txtLowStock =
+document.getElementById("lowStock");
+
+const txtImage =
+document.getElementById("productImage");
+
+const txtDescription =
+document.getElementById("description");
+
+const searchBox =
+document.getElementById("searchProduct");
+
+const categoryFilter =
+document.getElementById("categoryFilter");
 
 let editID = null;
 
-// ==============================
+// ======================================
 // LOAD PRODUCTS
-// ==============================
+// ======================================
 
 loadProducts();
 
@@ -46,22 +69,34 @@ onSnapshot(productsRef,(snapshot)=>{
 
 tableBody.innerHTML="";
 
-snapshot.forEach((document)=>{
+snapshot.forEach((item)=>{
 
-const product = document.data();
+const product=item.data();
 
-tableBody.innerHTML += `
+const status =
+product.stock<=product.lowStock
+?
+"Low Stock"
+:
+"In Stock";
+
+const badge =
+product.stock<=product.lowStock
+?
+"pending"
+:
+"complete";
+
+tableBody.innerHTML+=`
 
 <tr>
 
 <td>
 
-<img src="${product.image}"
-
+<img
+src="${product.image}"
 width="60"
-
 height="60"
-
 style="object-fit:cover;border-radius:10px;">
 
 </td>
@@ -76,21 +111,9 @@ style="object-fit:cover;border-radius:10px;">
 
 <td>
 
-<span class="${
-product.stock<=product.lowStock
-?
-"pending"
-:
-"complete"
-}">
+<span class="${badge}">
 
-${
-product.stock<=product.lowStock
-?
-"Low Stock"
-:
-"In Stock"
-}
+${status}
 
 </span>
 
@@ -99,20 +122,16 @@ product.stock<=product.lowStock
 <td>
 
 <button
-
 class="action-btn edit"
-
-onclick="editProduct('${document.id}')">
+onclick="editProduct('${item.id}')">
 
 <i class="bi bi-pencil"></i>
 
 </button>
 
 <button
-
 class="action-btn delete"
-
-onclick="deleteProduct('${document.id}')">
+onclick="deleteProduct('${item.id}')">
 
 <i class="bi bi-trash"></i>
 
@@ -129,22 +148,38 @@ onclick="deleteProduct('${document.id}')">
 });
 
 }
-// ==============================
+// ======================================
 // SAVE PRODUCT
-// ==============================
+// ======================================
 
 saveBtn.addEventListener("click", async () => {
 
-    const name = inputs[0].value.trim();
-    const category = inputs[1].value;
-    const price = Number(inputs[2].value);
-    const stock = Number(inputs[3].value);
-    const lowStock = Number(inputs[4].value);
-    const imageInput = inputs[5];
+    const name = txtName.value.trim();
+    const category = txtCategory.value;
+    const price = Number(txtPrice.value);
+    const stock = Number(txtStock.value);
+    const lowStock = Number(txtLowStock.value);
+    const description = txtDescription.value;
 
-    if(name=="" || price<=0){
+    if(name===""){
 
-        alert("Please complete all fields.");
+        alert("Please enter a product name.");
+
+        return;
+
+    }
+
+    if(price<=0){
+
+        alert("Please enter a valid price.");
+
+        return;
+
+    }
+
+    if(stock<0){
+
+        alert("Please enter a valid stock.");
 
         return;
 
@@ -152,7 +187,11 @@ saveBtn.addEventListener("click", async () => {
 
     let image = "https://placehold.co/60x60";
 
-    if(imageInput.files.length>0){
+    // ==========================
+    // IMAGE UPLOAD
+    // ==========================
+
+    if(txtImage.files.length>0){
 
         const reader = new FileReader();
 
@@ -160,101 +199,74 @@ saveBtn.addEventListener("click", async () => {
 
             image = e.target.result;
 
-            if(editID==null){
-
-                await addDoc(productsRef,{
-
-                    name,
-                    category,
-                    price,
-                    stock,
-                    lowStock,
-                    image
-
-                });
-
-            }else{
-
-                await updateDoc(
-
-                    doc(db,"products",editID),
-
-                    {
-
-                        name,
-                        category,
-                        price,
-                        stock,
-                        lowStock,
-                        image
-
-                    }
-
-                );
-
-                editID=null;
-
-            }
-
-            clearForm();
-
-            bootstrap.Modal
-            .getInstance(addModal)
-            .hide();
+            await saveToFirebase(image);
 
         };
 
-        reader.readAsDataURL(imageInput.files[0]);
+        reader.readAsDataURL(txtImage.files[0]);
 
     }else{
 
-        if(editID==null){
-
-            await addDoc(productsRef,{
-
-                name,
-                category,
-                price,
-                stock,
-                lowStock,
-                image
-
-            });
-
-        }else{
-
-            await updateDoc(
-
-                doc(db,"products",editID),
-
-                {
-
-                    name,
-                    category,
-                    price,
-                    stock,
-                    lowStock
-
-                }
-
-            );
-
-            editID=null;
-
-        }
-
-        clearForm();
-
-        bootstrap.Modal
-        .getInstance(addModal)
-        .hide();
+        await saveToFirebase(image);
 
     }
 
 });
-// ==============================
+
+// ======================================
+// SAVE TO FIREBASE
+// ======================================
+
+async function saveToFirebase(image){
+
+    const product = {
+
+        name: txtName.value.trim(),
+
+        category: txtCategory.value,
+
+        price: Number(txtPrice.value),
+
+        stock: Number(txtStock.value),
+
+        lowStock: Number(txtLowStock.value),
+
+        description: txtDescription.value,
+
+        image: image
+
+    };
+
+    if(editID===null){
+
+        await addDoc(productsRef,product);
+
+    }else{
+
+        await updateDoc(
+
+            doc(db,"products",editID),
+
+            product
+
+        );
+
+    }
+
+    clearForm();
+
+    editID = null;
+
+    saveBtn.textContent = "Save Product";
+
+    bootstrap.Modal
+        .getInstance(modal)
+        .hide();
+
+}
+// ======================================
 // EDIT PRODUCT
-// ==============================
+// ======================================
 
 window.editProduct = async function(id){
 
@@ -262,23 +274,29 @@ window.editProduct = async function(id){
 
     const snapshot = await getDocs(productsRef);
 
-    snapshot.forEach((document)=>{
+    snapshot.forEach((item)=>{
 
-        if(document.id === id){
+        if(item.id===id){
 
-            const product = document.data();
+            const product = item.data();
 
-            inputs[0].value = product.name;
-            inputs[1].value = product.category;
-            inputs[2].value = product.price;
-            inputs[3].value = product.stock;
-            inputs[4].value = product.lowStock;
+            txtName.value = product.name;
+
+            txtCategory.value = product.category;
+
+            txtPrice.value = product.price;
+
+            txtStock.value = product.stock;
+
+            txtLowStock.value = product.lowStock;
+
+            txtDescription.value = product.description || "";
 
             saveBtn.textContent = "Update Product";
 
-            const modal = new bootstrap.Modal(addModal);
+            const bsModal = new bootstrap.Modal(modal);
 
-            modal.show();
+            bsModal.show();
 
         }
 
@@ -286,13 +304,17 @@ window.editProduct = async function(id){
 
 };
 
-// ==============================
+// ======================================
 // DELETE PRODUCT
-// ==============================
+// ======================================
 
 window.deleteProduct = async function(id){
 
-    if(!confirm("Delete this product?")){
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this product?"
+    );
+
+    if(!confirmDelete){
 
         return;
 
@@ -305,118 +327,3 @@ window.deleteProduct = async function(id){
     );
 
 };
-
-// ==============================
-// SEARCH PRODUCT
-// ==============================
-
-const searchInput = document.getElementById("searchProduct");
-
-if(searchInput){
-
-    searchInput.addEventListener("keyup",()=>{
-
-        const keyword =
-        searchInput.value.toLowerCase();
-
-        const rows =
-        tableBody.querySelectorAll("tr");
-
-        rows.forEach(row=>{
-
-            row.style.display =
-            row.innerText
-            .toLowerCase()
-            .includes(keyword)
-            ?
-            ""
-            :
-            "none";
-
-        });
-
-    });
-
-}
-// ==============================
-// CATEGORY FILTER
-// ==============================
-
-const categoryFilter =
-document.getElementById("categoryFilter");
-
-if(categoryFilter){
-
-categoryFilter.addEventListener("change",()=>{
-
-const category =
-categoryFilter.value.toLowerCase();
-
-const rows =
-tableBody.querySelectorAll("tr");
-
-rows.forEach(row=>{
-
-if(category===""){
-
-row.style.display="";
-
-return;
-
-}
-
-const productCategory =
-row.cells[2].innerText.toLowerCase();
-
-row.style.display =
-productCategory===category
-?
-""
-:
-"none";
-
-});
-
-});
-
-}
-
-// ==============================
-// CLEAR FORM
-// ==============================
-
-function clearForm(){
-
-inputs[0].value="";
-inputs[1].selectedIndex=0;
-inputs[2].value="";
-inputs[3].value="";
-inputs[4].value=10;
-inputs[5].value="";
-inputs[6].value="";
-
-editID=null;
-
-saveBtn.textContent="Save Product";
-
-}
-
-// ==============================
-// RESET MODAL
-// ==============================
-
-addModal.addEventListener(
-
-"hidden.bs.modal",
-
-()=>{
-
-clearForm();
-
-});
-
-// ==============================
-// READY
-// ==============================
-
-console.log("Firebase Inventory Ready");
