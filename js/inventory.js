@@ -1,117 +1,220 @@
 import {
-db,
-collection,
-addDoc,
-getDocs,
-updateDoc,
-deleteDoc,
-doc,
-onSnapshot
+    db,
+    collection,
+    addDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    doc,
+    onSnapshot
 } from "./firebase.js";
 
-// ======================================
-// FIREBASE COLLECTION
-// ======================================
+// ===========================================
+// FIRESTORE
+// ===========================================
 
-const productsRef = collection(db,"products");
+const productsRef = collection(db, "products");
 
-// ======================================
-// HTML ELEMENTS
-// ======================================
+// ===========================================
+// ELEMENTS
+// ===========================================
 
-const tableBody =
-document.getElementById("productTable");
+const tableBody = document.getElementById("productTable");
 
-const modal =
-document.getElementById("productModal");
+const modalElement = document.getElementById("productModal");
 
-const saveBtn =
-document.getElementById("saveProduct");
+const modal = new bootstrap.Modal(modalElement);
 
-const txtName =
-document.getElementById("productName");
+const saveBtn = document.getElementById("saveProduct");
 
-const txtCategory =
-document.getElementById("productCategory");
+const txtName = document.getElementById("productName");
 
-const txtPrice =
-document.getElementById("productPrice");
+const txtCategory = document.getElementById("productCategory");
 
-const txtStock =
-document.getElementById("productStock");
+const txtPrice = document.getElementById("productPrice");
 
-const txtLowStock =
-document.getElementById("lowStock");
+const txtStock = document.getElementById("productStock");
 
-const txtImage =
-document.getElementById("productImage");
+const txtLowStock = document.getElementById("lowStock");
 
-const txtDescription =
-document.getElementById("description");
+const txtImage = document.getElementById("productImage");
 
-const searchBox =
-document.getElementById("searchProduct");
+const txtDescription = document.getElementById("description");
 
-const categoryFilter =
-document.getElementById("categoryFilter");
+const searchBox = document.getElementById("searchProduct");
+
+const categoryFilter = document.getElementById("categoryFilter");
+
+// ===========================================
+// VARIABLES
+// ===========================================
+
+let products = [];
 
 let editID = null;
 
-// ======================================
-// LOAD PRODUCTS
-// ======================================
+// ===========================================
+// START
+// ===========================================
 
 loadProducts();
 
+// ===========================================
+// LOAD PRODUCTS
+// ===========================================
+
 function loadProducts(){
 
-onSnapshot(productsRef,(snapshot)=>{
+    onSnapshot(productsRef,(snapshot)=>{
 
-tableBody.innerHTML="";
+        products = [];
 
-snapshot.forEach((item)=>{
+        snapshot.forEach((document)=>{
 
-const product=item.data();
+            products.push({
 
-const status =
-product.stock<=product.lowStock
-?
-"Low Stock"
-:
-"In Stock";
+                id: document.id,
 
-const badge =
-product.stock<=product.lowStock
-?
-"pending"
-:
-"complete";
+                ...document.data()
 
-tableBody.innerHTML+=`
+            });
+
+        });
+
+        renderProducts();
+
+    });
+
+}
+
+// ===========================================
+// RENDER PRODUCTS
+// ===========================================
+
+function renderProducts(){
+
+    tableBody.innerHTML = "";
+
+    let keyword = searchBox.value.toLowerCase();
+
+    let category = categoryFilter.value;
+
+    let filtered = products.filter(product=>{
+
+        const matchSearch =
+
+        product.name
+        .toLowerCase()
+        .includes(keyword);
+
+        const matchCategory =
+
+        category==""
+
+        ||
+
+        product.category==category;
+
+        return matchSearch && matchCategory;
+
+    });
+
+    if(filtered.length===0){
+
+        tableBody.innerHTML = `
+
+<tr>
+
+<td colspan="7"
+style="text-align:center;padding:40px;">
+
+No Products Found
+
+</td>
+
+</tr>
+
+`;
+
+        return;
+
+    }
+
+    filtered.forEach(product=>{
+
+        const status =
+
+        product.stock<=product.lowStock
+
+        ?
+
+        "Low Stock"
+
+        :
+
+        "In Stock";
+
+        const badge =
+
+        product.stock<=product.lowStock
+
+        ?
+
+        "pending"
+
+        :
+
+        "complete";
+
+        tableBody.innerHTML += `
 
 <tr>
 
 <td>
 
 <img
+
 src="${product.image}"
-width="60"
-height="60"
-style="object-fit:cover;border-radius:10px;">
+
+style="
+
+width:60px;
+
+height:60px;
+
+border-radius:12px;
+
+object-fit:cover;">
 
 </td>
 
-<td>${product.name}</td>
+<td>
 
-<td>${product.category}</td>
+${product.name}
 
-<td>₱${product.price}</td>
-
-<td>${product.stock}</td>
+</td>
 
 <td>
 
-<span class="${badge}">
+${product.category}
+
+</td>
+
+<td>
+
+₱${Number(product.price).toLocaleString()}
+
+</td>
+
+<td>
+
+${product.stock}
+
+</td>
+
+<td>
+
+<span class="status ${badge}">
 
 ${status}
 
@@ -122,18 +225,22 @@ ${status}
 <td>
 
 <button
-class="action-btn edit"
-onclick="editProduct('${item.id}')">
 
-<i class="bi bi-pencil"></i>
+class="action-btn edit"
+
+onclick="editProduct('${product.id}')">
+
+<i class="bi bi-pencil-fill"></i>
 
 </button>
 
 <button
-class="action-btn delete"
-onclick="deleteProduct('${item.id}')">
 
-<i class="bi bi-trash"></i>
+class="action-btn delete"
+
+onclick="deleteProduct('${product.id}')">
+
+<i class="bi bi-trash-fill"></i>
 
 </button>
 
@@ -143,81 +250,102 @@ onclick="deleteProduct('${item.id}')">
 
 `;
 
-});
-
-});
+    });
 
 }
-// ======================================
-// SAVE PRODUCT
-// ======================================
+// ===========================================
+// SAVE BUTTON
+// ===========================================
 
 saveBtn.addEventListener("click", async () => {
 
-    const name = txtName.value.trim();
-    const category = txtCategory.value;
-    const price = Number(txtPrice.value);
-    const stock = Number(txtStock.value);
-    const lowStock = Number(txtLowStock.value);
-    const description = txtDescription.value;
+    if (txtName.value.trim() === "") {
 
-    if(name===""){
+        alert("Please enter Product Name.");
 
-        alert("Please enter a product name.");
+        txtName.focus();
 
         return;
 
     }
 
-    if(price<=0){
+    if (Number(txtPrice.value) <= 0) {
 
-        alert("Please enter a valid price.");
+        alert("Please enter a valid Price.");
 
-        return;
-
-    }
-
-    if(stock<0){
-
-        alert("Please enter a valid stock.");
+        txtPrice.focus();
 
         return;
 
     }
 
-    let image = "https://placehold.co/60x60";
+    if (Number(txtStock.value) < 0) {
 
-    // ==========================
-    // IMAGE UPLOAD
-    // ==========================
+        alert("Please enter a valid Stock.");
 
-    if(txtImage.files.length>0){
+        txtStock.focus();
+
+        return;
+
+    }
+
+    saveBtn.disabled = true;
+
+    saveBtn.innerHTML = `
+
+<span class="spinner-border spinner-border-sm me-2"></span>
+
+Saving...
+
+`;
+
+    let image = "https://placehold.co/300x300";
+
+    if (txtImage.files.length > 0) {
 
         const reader = new FileReader();
 
-        reader.onload = async function(e){
+        reader.onload = async function (e) {
 
             image = e.target.result;
 
-            await saveToFirebase(image);
+            await saveProduct(image);
 
         };
 
         reader.readAsDataURL(txtImage.files[0]);
 
-    }else{
+    } else {
 
-        await saveToFirebase(image);
+        if (editID == null) {
+
+            await saveProduct(image);
+
+        } else {
+
+            const oldProduct = products.find(
+
+                p => p.id === editID
+
+            );
+
+            image = oldProduct
+                ? oldProduct.image
+                : image;
+
+            await saveProduct(image);
+
+        }
 
     }
 
 });
 
-// ======================================
-// SAVE TO FIREBASE
-// ======================================
+// ===========================================
+// SAVE PRODUCT
+// ===========================================
 
-async function saveToFirebase(image){
+async function saveProduct(image) {
 
     const product = {
 
@@ -231,87 +359,125 @@ async function saveToFirebase(image){
 
         lowStock: Number(txtLowStock.value),
 
-        description: txtDescription.value,
+        description: txtDescription.value.trim(),
 
-        image: image
+        image: image,
+
+        updatedAt: Date.now()
 
     };
 
-    if(editID===null){
+    try {
 
-        await addDoc(productsRef,product);
+        if (editID === null) {
 
-    }else{
+            product.createdAt = Date.now();
 
-        await updateDoc(
+            await addDoc(
 
-            doc(db,"products",editID),
+                productsRef,
 
-            product
+                product
 
-        );
+            );
 
-    }
+        } else {
 
-    clearForm();
+            await updateDoc(
 
-    editID = null;
+                doc(db, "products", editID),
 
-    saveBtn.textContent = "Save Product";
+                product
 
-    bootstrap.Modal
-        .getInstance(modal)
-        .hide();
-
-}
-// ======================================
-// EDIT PRODUCT
-// ======================================
-
-window.editProduct = async function(id){
-
-    editID = id;
-
-    const snapshot = await getDocs(productsRef);
-
-    snapshot.forEach((item)=>{
-
-        if(item.id===id){
-
-            const product = item.data();
-
-            txtName.value = product.name;
-
-            txtCategory.value = product.category;
-
-            txtPrice.value = product.price;
-
-            txtStock.value = product.stock;
-
-            txtLowStock.value = product.lowStock;
-
-            txtDescription.value = product.description || "";
-
-            saveBtn.textContent = "Update Product";
-
-            const bsModal = new bootstrap.Modal(modal);
-
-            bsModal.show();
+            );
 
         }
 
-    });
+        clearForm();
+
+        editID = null;
+
+        modal.hide();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(error.message);
+
+    }
+
+    saveBtn.disabled = false;
+
+    saveBtn.innerHTML =
+
+        editID === null
+
+        ?
+
+        "Save Product"
+
+        :
+
+        "Update Product";
+
+}
+// ===========================================
+// EDIT PRODUCT
+// ===========================================
+
+window.editProduct = function(id){
+
+    const product = products.find(p => p.id === id);
+
+    if(!product){
+
+        return;
+
+    }
+
+    editID = id;
+
+    txtName.value = product.name;
+
+    txtCategory.value = product.category;
+
+    txtPrice.value = product.price;
+
+    txtStock.value = product.stock;
+
+    txtLowStock.value = product.lowStock;
+
+    txtDescription.value = product.description || "";
+
+    txtImage.value = "";
+
+    saveBtn.innerHTML = "Update Product";
+
+    modal.show();
 
 };
 
-// ======================================
+// ===========================================
 // DELETE PRODUCT
-// ======================================
+// ===========================================
 
 window.deleteProduct = async function(id){
 
+    const product = products.find(p=>p.id===id);
+
+    if(!product){
+
+        return;
+
+    }
+
     const confirmDelete = confirm(
-        "Are you sure you want to delete this product?"
+
+        `Delete "${product.name}"?`
+
     );
 
     if(!confirmDelete){
@@ -320,10 +486,336 @@ window.deleteProduct = async function(id){
 
     }
 
-    await deleteDoc(
+    try{
 
-        doc(db,"products",id)
+        await deleteDoc(
+
+            doc(db,"products",id)
+
+        );
+
+    }
+
+    catch(error){
+
+        console.error(error);
+
+        alert(error.message);
+
+    }
+
+};
+
+// ===========================================
+// SEARCH
+// ===========================================
+
+searchBox.addEventListener("input",()=>{
+
+    renderProducts();
+
+});
+
+// ===========================================
+// CATEGORY FILTER
+// ===========================================
+
+categoryFilter.addEventListener("change",()=>{
+
+    renderProducts();
+
+});
+
+// ===========================================
+// SORT PRODUCTS
+// ===========================================
+
+function sortProducts(){
+
+    products.sort((a,b)=>{
+
+        return a.name.localeCompare(b.name);
+
+    });
+
+}
+
+window.sortProducts = sortProducts;
+// ===========================================
+// CLEAR FORM
+// ===========================================
+
+function clearForm(){
+
+    txtName.value = "";
+
+    txtCategory.selectedIndex = 0;
+
+    txtPrice.value = "";
+
+    txtStock.value = "";
+
+    txtLowStock.value = 10;
+
+    txtDescription.value = "";
+
+    txtImage.value = "";
+
+}
+
+// ===========================================
+// RESET FORM
+// ===========================================
+
+function resetForm(){
+
+    editID = null;
+
+    clearForm();
+
+    saveBtn.disabled = false;
+
+    saveBtn.innerHTML = "Save Product";
+
+}
+
+// ===========================================
+// MODAL CLOSED
+// ===========================================
+
+modalElement.addEventListener(
+
+    "hidden.bs.modal",
+
+    ()=>{
+
+        resetForm();
+
+    }
+
+);
+
+// ===========================================
+// IMAGE PREVIEW CHECK
+// ===========================================
+
+txtImage.addEventListener("change",()=>{
+
+    if(txtImage.files.length==0){
+
+        return;
+
+    }
+
+    console.log(
+
+        "Selected:",
+
+        txtImage.files[0].name
 
     );
 
-};
+});
+
+// ===========================================
+// ENTER KEY SUPPORT
+// ===========================================
+
+document.addEventListener("keydown",(e)=>{
+
+    if(
+
+        e.key==="Enter"
+
+        &&
+
+        modalElement.classList.contains("show")
+
+        &&
+
+        document.activeElement.tagName!=="TEXTAREA"
+
+    ){
+
+        e.preventDefault();
+
+        saveBtn.click();
+
+    }
+
+});
+
+// ===========================================
+// REFRESH WHEN WINDOW FOCUSED
+// ===========================================
+
+window.addEventListener("focus",()=>{
+
+    renderProducts();
+
+});
+
+// ===========================================
+// FIREBASE CONNECTION CHECK
+// ===========================================
+
+onSnapshot(productsRef,
+
+()=>{
+
+    console.log("✅ Firestore Connected");
+
+},
+
+(error)=>{
+
+    console.error(error);
+
+}
+
+);
+
+// ===========================================
+// INITIALIZE
+// ===========================================
+
+window.renderProducts = renderProducts;
+
+window.clearForm = clearForm;
+
+window.resetForm = resetForm;
+
+console.log("Inventory Part 4 Loaded");
+// ===========================================
+// LOADING BUTTON
+// ===========================================
+
+function setButtonLoading(isLoading){
+
+    if(isLoading){
+
+        saveBtn.disabled = true;
+
+        saveBtn.innerHTML = `
+
+<span class="spinner-border spinner-border-sm me-2"></span>
+
+Saving...
+
+`;
+
+    }else{
+
+        saveBtn.disabled = false;
+
+        saveBtn.innerHTML =
+
+        editID == null
+
+        ?
+
+        "Save Product"
+
+        :
+
+        "Update Product";
+
+    }
+
+}
+
+// ===========================================
+// IMAGE VALIDATION
+// ===========================================
+
+txtImage.addEventListener("change",()=>{
+
+    if(txtImage.files.length==0){
+
+        return;
+
+    }
+
+    const file = txtImage.files[0];
+
+    if(file.size > 2 * 1024 * 1024){
+
+        alert("Image must be less than 2MB.");
+
+        txtImage.value = "";
+
+        return;
+
+    }
+
+});
+
+// ===========================================
+// FIREBASE STATUS
+// ===========================================
+
+onSnapshot(productsRef,
+
+(snapshot)=>{
+
+    console.log(
+
+        "Products Loaded:",
+
+        snapshot.size
+
+    );
+
+},
+
+(error)=>{
+
+    console.error(error);
+
+    alert(
+
+        "Cannot connect to Firebase."
+
+    );
+
+}
+
+);
+
+// ===========================================
+// WINDOW FUNCTIONS
+// ===========================================
+
+window.editProduct = editProduct;
+
+window.deleteProduct = deleteProduct;
+
+window.renderProducts = renderProducts;
+
+// ===========================================
+// START
+// ===========================================
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+()=>{
+
+    clearForm();
+
+    renderProducts();
+
+    console.log(
+
+        "Inventory Ready"
+
+    );
+
+}
+
+);
+
+// ===========================================
+// END OF FILE
+// ===========================================
